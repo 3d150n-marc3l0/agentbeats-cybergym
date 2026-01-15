@@ -1,13 +1,13 @@
-name: Publish Agents
+name: Build, Test and Publish Agents
 
-# Trigger this workflow when pushing main branch and tags
+# Trigger workflow on PRs, pushes to main, and version tags
 on:
   pull_request:
   push:
     branches:
       - main
     tags:
-      - 'v*'  # Trigger on version tags like v1.0.0, v1.1.0
+      - 'v*'
 
 jobs:
   publish:
@@ -16,64 +16,95 @@ jobs:
     strategy:
       matrix:
         include:
-          # Update this to build your own agent images.
           - name: green-agent
             dockerfile: scenarios/cybergym/Dockerfile.green-agent
+            port: 9009
           - name: purple-agent
             dockerfile: scenarios/cybergym/Dockerfile.purple-agent
+            port: 9010
 
-    # These permissions are required for the workflow to:
-    # - Read repository contents (checkout code)
-    # - Write to GitHub Container Registry (push Docker images)
     permissions:
       contents: read
       packages: write
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          # GITHUB_TOKEN is automatically provided by GitHub Actions
-          # No manual secret configuration needed!
-          # It has permissions based on the 'permissions' block above
-          password: ${{ secrets.GITHUB_TOKEN }}
-
+      # 2️⃣ Extract Docker metadata
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}-${{ matrix.name }}
           tags: |
-            # For tags like v1.0, create tag '1.0'
             type=semver,pattern={{version}}
-            # For tags like v1.0, create tag '1'
             type=semver,pattern={{major}}
-            # For main branch, create tag 'latest'
             type=raw,value=latest,enable={{is_default_branch}}
-            # For PRs, create tag 'pr-123'
             type=ref,event=pr
 
+      # 3️⃣ Log in to GHCR (each matrix job)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4️⃣ Build & push Docker image
       - name: Build and push Docker image (${{ matrix.name }})
         id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          # Only push if this is a push event (not a PR)
-          # PRs will build but not push to avoid polluting the registry
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Explicitly build for linux/amd64 (GitHub Actions default)
           platforms: linux/amd64
 
+      # 5️⃣ Run container for testing on PRs or local dev
+      - name: Run agent container for tests
+        if: github.event_name == 'pull_request'
+        env:
+          SECRETS_JSON: ${{ toJson(secrets) }}
+        run: |
+          echo "$SECRETS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' > .env
+          docker run -d -p ${{ matrix.port }}:${{ matrix.port }} \
+            --name agent-container-${{ matrix.name }} \
+            --env-file .env \
+            $(echo "${{ steps.meta.outputs.tags }}" | head -n1) \
+            --host 0.0.0.0 --port ${{ matrix.port }}
+          # Wait until the server is ready
+          timeout 30 bash -c "until curl -sf http://localhost:${{ matrix.port }}/.well-known/agent-card.json > /dev/null; do sleep 1; done"
+
+      # 6️⃣ Set up uv
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
+      # 7️⃣ Install test dependencies
+      - name: Install test dependencies
+        if: github.event_name == 'pull_request'
+        run: uv sync --extra test
+
+      # 8️⃣ Run tests
+      - name: Run tests
+        if: github.event_name == 'pull_request'
+        run: uv run pytest -v --agent-url http://localhost:${{ matrix.port }}
+
+      # 9️⃣ Stop container and show logs
+      - name: Stop container and show logs
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "=== Agent Container Logs (${{ matrix.name }}) ==="
+          docker logs agent-container-${{ matrix.name }} || true
+          docker stop agent-container-${{ matrix.name }} || true
+          docker rm agent-container-${{ matrix.name }} || true
+
+      # 🔟 Output digest (for successful push)
       - name: Output image digest
-        if: github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request'
         run: |
           echo "## Docker Image Published: ${{ matrix.name }} :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
