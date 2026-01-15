@@ -7,9 +7,10 @@ name = "agentbeats-tutorial"
 version = "0.1.0"
 description = "Agentbeats Tutorial"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     "a2a-sdk[http-server]>=0.3.20",
+    "cybergym",
     "httpx>=0.28.1",
     "pydantic>=2.11.9",
     "python-dotenv>=1.1.1",
@@ -28,6 +29,20 @@ tau2-evaluator = [
     "tau2 @ git+https://github.com/sierra-research/tau2-bench.git",
 ]
 
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.1",
+]
+cybergym-green-agent = [
+    "cybergym",
+    "litellm>=1.80.7",
+]
+cybergym-purple-agent = [
+    "cybergym>=0.1.0",
+    "litellm>=1.80.7",
+]
+
 [project.scripts]
 agentbeats-run = "agentbeats.run_scenario:main"
 
@@ -36,6 +51,9 @@ package = true
 dev-dependencies = [
     "mypy>=1.18.1",
 ]
+
+[tool.uv.sources]
+cybergym = { git = "https://github.com/sunblaze-ucb/cybergym.git" }
 
 [tool.hatch.metadata]
 allow-direct-references = true

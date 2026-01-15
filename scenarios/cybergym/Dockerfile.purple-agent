@@ -1,0 +1,19 @@
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm
+
+RUN adduser agentbeats
+USER agentbeats
+RUN mkdir -p /home/agentbeats/.cache/uv
+WORKDIR /home/agentbeats/agentx
+
+COPY pyproject.toml uv.lock README.md ./
+COPY src src
+
+RUN \
+    --mount=type=cache,target=/home/agentbeats/.cache/uv,uid=1000 \
+    uv sync --locked --no-dev --no-install-project --extra cybergym-purple-agent
+
+COPY scenarios scenarios
+
+ENTRYPOINT ["uv", "run", "scenarios/cybergym/purple-agent/src/server.py"]
+CMD ["--host", "0.0.0.0"]
+EXPOSE 9019

@@ -16,14 +16,10 @@ jobs:
       matrix:
         include:
           # Update this to build your own agent images.
-          - name: debate-judge
-            dockerfile: scenarios/debate/Dockerfile.debate-judge
-          - name: debater
-            dockerfile: scenarios/debate/Dockerfile.debater
-          - name: tau2-agent
-            dockerfile: scenarios/tau2/Dockerfile.tau2-agent
-          - name: tau2-evaluator
-            dockerfile: scenarios/tau2/Dockerfile.tau2-evaluator
+          - name: green-agent
+            dockerfile: scenarios/cybergym/Dockerfile.green-agent
+          - name: purple-agent
+            dockerfile: scenarios/cybergym/Dockerfile.purple-agent
 
     # These permissions are required for the workflow to:
     # - Read repository contents (checkout code)

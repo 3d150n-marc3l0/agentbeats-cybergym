@@ -1,0 +1,14 @@
+[green_agent]
+endpoint = "http://127.0.0.1:9009"
+cmd = "python scenarios/cybergym/green-agent/src/server.py --host 127.0.0.1 --port 9009"
+
+[[participants]]
+role = "security_analyst"
+endpoint = "http://127.0.0.1:9019"
+cmd = "python scenarios/cybergym/purple-agent/src/server.py --host 127.0.0.1 --port 9019"
+
+[config]
+task_id = "arvo:47101"
+difficulty = "level1"
+llm_model = "gpt-3.5-turbo"
+max_attempts = 3
