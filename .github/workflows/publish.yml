@@ -1,6 +1,6 @@
 name: Build, Test and Publish Agents
 
-# Trigger workflow on PRs, pushes to main, and version tags: Run
+# Trigger workflow on PRs, pushes to main, and version tags: Run again
 on:
   pull_request:
   push:
