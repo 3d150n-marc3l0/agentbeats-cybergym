@@ -2,6 +2,7 @@ name: Publish Agents
 
 # Trigger this workflow when pushing main branch and tags
 on:
+  pull_request:
   push:
     branches:
       - main
