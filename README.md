@@ -67,10 +67,10 @@ graph TD
     CG -->|5. Execution Logs| GA
     GA -->|6. Artifacts & Score| AB
 
-    style GA fill:#d4f1f4,stroke:#0077b6,stroke-width:2px
-    style PA fill:#e2d4f4,stroke:#7b2cbf,stroke-width:2px
-    style CG fill:#ffccd5,stroke:#e63946,stroke-width:2px
-    style AB fill:#e9ecef,stroke:#6c757d,stroke-width:2px
+    style GA fill:#1f883d,stroke:#1a7f37,stroke-width:2px,color:#fff
+    style PA fill:#8250df,stroke:#653ad6,stroke-width:2px,color:#fff
+    style CG fill:#cf222e,stroke:#a40e26,stroke-width:2px,color:#fff
+    style AB fill:#6e7781,stroke:#57606a,stroke-width:2px,color:#fff
 ```
 
 1.  **Task Assignment**:
