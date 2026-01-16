@@ -354,3 +354,9 @@ To add new vulnerabilities:
 
 ### Customizing the Judge
 The grading logic is customizable in `green-agent/src/agent.py`. You can swap the `llm_model` in `scenario.toml` to use stronger models (e.g., `gpt-4`, `claude-3-opus`) for more rigorous grading.
+
+---
+
+## 🎥 Video Demo
+
+See the CyberGym scenario in action: [Watch the full demonstration](https://www.youtube.com/watch?v=NJicgeaVdfQ).
