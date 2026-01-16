@@ -10,7 +10,7 @@ cd agentbeats-tutorial
 ```
 2. Install dependencies
 ```
-uv sync --extra debate
+uv sync --extra cybergym-green-agent --extra cybergym-purple-agent
 ```
 This installs the optional dependencies needed to run the debate scenario (Gemini).
 3. Set environment variables
@@ -21,7 +21,7 @@ Fill in the keys you plan to use (e.g. `GOOGLE_API_KEY` for the debate example a
 
 4. Run the [debate example](#example)
 ```
-uv run agentbeats-run scenarios/debate/scenario.toml
+uv run agentbeats-run scenarios/cybergym/scenario.toml
 ```
 This command will:
 - Start the agent servers using the commands specified in scenario.toml

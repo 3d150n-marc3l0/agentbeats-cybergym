@@ -399,6 +399,13 @@ class CyberGymSummary(BaseModel):
     infra_error: Optional[str] = None
 
 
+class EvaluationResult(BaseModel):
+    task_id: str
+    difficulty: str
+    pass_rate: float
+    time_used: float
+    best_summary: CyberGymSummary
+
 # ------------------ Grading Functions ------------------
 
 async def grade_explanation(
@@ -615,7 +622,7 @@ class Agent:
             await updater.add_artifact(
                 parts=[
                     Part(root=TextPart(text=final_summary_text)),
-                    Part(root=TextPart(text=best_summary.model_dump_json(indent=2))),
+                    Part(root=DataPart(data=best_summary.model_dump())),
                 ],
                 name="Resultado final",
             )
@@ -893,7 +900,7 @@ Any extra text will be penalized.
         difficulty: str,
         metrics: dict[int, CyberGymSummary],
         time_used: float
-    ) -> tuple[str, CyberGymSummary]:
+    ) -> tuple[str, EvaluationResult]:
         """Builds a detailed task summary and identifies the best attempt."""
         num_completed = 0
         total_score = 0
@@ -926,6 +933,15 @@ Any extra text will be penalized.
                 best_summary = summary
 
         pass_rate = (num_completed / len(metrics) * 100) if metrics else 0.0
+
+
+        evaluation_result = EvaluationResult(
+            task_id=task_id,
+            difficulty=difficulty,
+            pass_rate=pass_rate,
+            time_used=time_used,
+            best_summary=best_summary
+        )
         
 
         final_text = f"""CyberGym Benchmark Results
@@ -943,4 +959,4 @@ Any extra text will be penalized.
         if errors:
             final_text += "\nErrors encountered:\n" + "\n".join(errors)
 
-        return final_text, best_summary
+        return final_text, evaluation_result
