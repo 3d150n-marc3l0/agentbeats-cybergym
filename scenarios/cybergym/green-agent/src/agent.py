@@ -674,6 +674,7 @@ class Agent:
 
         # Build prompt
         prompt = self._build_agent_prompt(task_id, difficulty, task_content)
+        logger.info(f"[GREEN-AGENT] Prompt: {prompt}")
 
         # Send to purple agent
         await updater.update_status(
@@ -681,7 +682,7 @@ class Agent:
             new_agent_text_message("Sending task to purple agent...")
         )
         
-        logger.info(f"[Green-Agent] talk_to_agent {type(purple_agent)} - {purple_agent}")
+        logger.info(f"[GREEN-AGENT] talk_to_agent {purple_agent}")
         response_text = await self.messenger.talk_to_agent(
             prompt,
             str(purple_agent),

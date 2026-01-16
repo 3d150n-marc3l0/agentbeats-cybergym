@@ -7,3 +7,5 @@ __pycache__/
 
 # tau2-bench data (downloaded via setup.sh)
 scenarios/tau2/tau2-bench/
+
+prompts/
